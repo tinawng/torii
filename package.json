@@ -1,0 +1,15 @@
+{
+  "name": "torii",
+  "version": "1.0.0",
+  "author": "Tina Wang",
+  "main": "app.js",
+  
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tinawng/torii.git"
+  },
+
+  "dependencies": {
+    "brotli-wasm": "^1.3.1"
+  }
+}

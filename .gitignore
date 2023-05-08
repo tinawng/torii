@@ -1,0 +1,7 @@
+*
+!.env.sample
+!.gitignore
+!app.js
+!bun.lockb
+!package.json
+!README.md
