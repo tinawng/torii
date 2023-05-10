@@ -10,6 +10,8 @@ export default {
   async fetch({ headers, method, url: raw_url }) {
     const url = new URL(raw_url)
     if (method === "GET") {
+      if (url.pathname === "/ping") return new Response("🏓")
+
       // 🛂
       let remote_url
       try {
@@ -17,7 +19,6 @@ export default {
       } catch (e) {
         return new Response("", { status: 400 })
       }
-      if (remote_url === "ping") new Response("🏓")
       if (!ALLOWED_REMOTE_HOSTS.some(host => remote_url.host === host)) return new Response("", { status: 400 })
 
       // 🗃️
