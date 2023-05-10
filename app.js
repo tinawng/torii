@@ -17,6 +17,7 @@ export default {
       } catch (e) {
         return new Response("", { status: 400 })
       }
+      if (remote_url === "ping") new Response("🏓")
       if (!ALLOWED_REMOTE_HOSTS.some(host => remote_url.host === host)) return new Response("", { status: 400 })
 
       // 🗃️
@@ -38,6 +39,37 @@ export default {
           "Content-Encoding": "br",
         },
       })
+    } else if (method === "PUT") {
+      if (headers.get("X-API-KEY") !== SHARED_SECRET) return new Response("", { status: 401 })
+
+      const key = url.href.slice(url.href.indexOf(url.host) + url.host.length + 1)
+      if (!key.length) return new Response("", { status: 400 })
+
+      let reqs = []
+      CACHE.forEach((_v, _key) => {
+        if (_key.startsWith(key))
+          reqs.push(
+            new Promise(async (resolve, reject) => {
+              const remote_resp = await fetch(_key)
+              if (remote_resp.status > 299) {
+                CACHE.delete(_key)
+                reject(_key)
+              }
+
+              compressed_resp = compress(Buffer.from(await remote_resp.text()), { quality: 11 })
+              CACHE.set(r_key, compressed_resp)
+              resolve()
+            })
+          )
+      })
+
+      try {
+        await Promise.all(reqs)
+      } catch (error) {
+        return new Response(`cache refetch failed: ${error}`, { status: 500 })
+      }
+
+      return new Response("", { status: 200 })
     } else if (method === "DELETE") {
       if (headers.get("X-API-KEY") !== SHARED_SECRET) return new Response("", { status: 401 })
 
