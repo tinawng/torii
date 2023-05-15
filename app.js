@@ -9,7 +9,19 @@ export default {
   port: process.env.PORT,
   async fetch({ headers, method, url: raw_url }) {
     const url = new URL(raw_url)
-    if (method === "GET") {
+
+    if (method === "OPTIONS") {
+      return new Response("", {
+        headers: {
+          "Access-Control-Allow-Methods": "GET,OPTIONS",
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Max-Age": "86400",
+          "Access-Control-Allow-Headers": "Content-Type, authorization",
+          "Content-Length": "0",
+        }
+      })
+    }
+    else if (method === "GET") {
       if (url.pathname === "/ping") return new Response("🏓")
 
       // 🛂
@@ -36,6 +48,7 @@ export default {
       // 💨
       return new Response(Buffer.from(compressed_resp), {
         headers: {
+          "Access-Control-Allow-Origin": "*",
           "Content-Type": "application/json",
           "Content-Encoding": "br",
         },
