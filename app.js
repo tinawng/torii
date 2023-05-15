@@ -47,7 +47,7 @@ export default {
       if (!key.length) return new Response("", { status: 400 })
 
       let reqs = []
-      CACHE.forEach((_v, _key) => {
+      CACHE.forEach((_, _key) => {
         if (_key.startsWith(key))
           reqs.push(
             new Promise(async (resolve, reject) => {
