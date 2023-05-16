@@ -38,7 +38,7 @@ export default {
       if (CACHE.has(remote_url.href)) compressed_resp = CACHE.get(remote_url.href)
       else {
         // 📡
-        const remote_resp = await fetch(remote_url)
+        const remote_resp = await fetch(remote_url, { headers: { referer: process.env.NODE_NAME } })
         if (remote_resp.status > 299) return new Response("", { status: 421 })
 
         compressed_resp = compress(Buffer.from(await remote_resp.text()), { quality: 11 })
@@ -53,7 +53,7 @@ export default {
           "Content-Encoding": "br",
         },
       })
-    } else if (method === "PUT") {
+    } else if (method === "PATCH") {
       if (headers.get("X-API-KEY") !== SHARED_SECRET) return new Response("", { status: 401 })
 
       const key = url.href.slice(url.href.indexOf(url.host) + url.host.length + 1)
@@ -64,14 +64,13 @@ export default {
         if (_key.startsWith(key))
           reqs.push(
             new Promise(async (resolve, reject) => {
-              const remote_resp = await fetch(_key)
+              const remote_resp = await fetch(_key, { headers: { referer: process.env.NODE_NAME } })
               if (remote_resp.status > 299) {
                 CACHE.delete(_key)
                 reject(_key)
               }
 
-              compressed_resp = compress(Buffer.from(await remote_resp.text()), { quality: 11 })
-              CACHE.set(r_key, compressed_resp)
+              CACHE.set(_key, compress(Buffer.from(await remote_resp.text()), { quality: 11 }))
               resolve()
             })
           )
