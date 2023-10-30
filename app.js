@@ -11,13 +11,13 @@ export default {
     const url = new URL(raw_url)
 
     if (method === "OPTIONS") {
-      return new Response("", {
+      return new Response("OK", {
         headers: {
           "Access-Control-Allow-Methods": "GET,OPTIONS",
           "Access-Control-Allow-Origin": "*",
           "Access-Control-Max-Age": "86400",
           "Access-Control-Allow-Headers": "Content-Type, authorization",
-          "Content-Length": "0",
+          "Content-Length": "2",
         },
       })
     } else if (method === "GET") {
@@ -33,7 +33,7 @@ export default {
       if (!ALLOWED_REMOTE_HOSTS.some(host => remote_url.host === host)) return new Response("", { status: 400 })
 
       // 🗃️
-      let compressed_resp
+      let compressed_resp, was_rep_cached = true
       if (CACHE.has(remote_url.href)) compressed_resp = CACHE.get(remote_url.href)
       else {
         // 📡
@@ -42,6 +42,7 @@ export default {
 
         compressed_resp = compress(Buffer.from(await remote_resp.text()), { quality: 11 })
         CACHE.set(remote_url.href, compressed_resp)
+        was_rep_cached = false
       }
 
       // 💨
@@ -50,6 +51,7 @@ export default {
           "Access-Control-Allow-Origin": "*",
           "Content-Type": "application/json",
           "Content-Encoding": "br",
+          "X-CACHED": was_rep_cached
         },
       })
     } else if (method === "PATCH") {
